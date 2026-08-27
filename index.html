@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AduanTEC | Validación preventiva</title>
+  <meta name="description" content="Plataforma de validación preventiva de fichas técnicas para importación." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">AT</div>
+        <div>
+          <strong>AduanTEC</strong>
+          <span>Validación preventiva</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="#inicio" class="active">Inicio</a>
+        <a href="#validacion">Nueva validación</a>
+        <a href="#base-historica">Base histórica</a>
+        <a href="#biblioteca">Biblioteca regulatoria</a>
+        <a href="#historial">Historial</a>
+      </nav>
+
+      <div class="sidebar-note">
+        <strong>Versión demostrativa</strong>
+        <p>Las reglas del sistema son simuladas y no reemplazan una revisión legal, sanitaria o aduanera.</p>
+      </div>
+    </aside>
+
+    <main>
+      <section class="welcome-card" id="inicio">
+        <div>
+          <span class="welcome-label">Bienvenido a AduanTEC</span>
+          <h2>Centraliza, compara y valida la información técnica de tus productos.</h2>
+          <p>
+            Revisa documentación nueva antes del embarque y consulta el historial de productos
+            previamente importados por tu empresa.
+          </p>
+        </div>
+        <div class="welcome-mini">
+          <strong>Validación preventiva</strong>
+          <span>Menos retrabajo documental</span>
+        </div>
+      </section>
+
+      <header class="topbar">
+        <div>
+          <h1>Valida tu producto antes de importarlo</h1>
+          <p class="lead">
+            Selecciona el tipo de mercancía, carga la ficha técnica y detecta campos faltantes,
+            inconsistencias y cambios respecto a documentación histórica.
+          </p>
+        </div>
+        <div class="badge">MVP v0.3</div>
+      </header>
+
+      <section class="panel" id="validacion">
+        <div class="section-heading">
+          <div class="step">1</div>
+          <div>
+            <h2>¿Qué deseas importar?</h2>
+            <p>Selecciona primero el grupo de mercancía y después la subcategoría específica.</p>
+          </div>
+        </div>
+
+        <div id="groupGrid" class="group-grid"></div>
+
+        <div id="subcategoryArea" class="subcategory-area">
+          <div class="subcategory-header">
+            <div>
+              <span class="field-label">Grupo seleccionado</span>
+              <h3 id="selectedGroupTitle">Cosmética y cuidado personal</h3>
+            </div>
+            <span id="selectedPath" class="path-badge">Cosméticos</span>
+          </div>
+          <div id="subcategoryGrid" class="subcategory-grid"></div>
+        </div>
+
+        <div class="route-card">
+          <div>
+            <span class="field-label">Ruta de validación</span>
+            <strong id="routeTitle">Cosmética y cuidado personal / Cosméticos</strong>
+          </div>
+          <p id="routeDescription">Se revisarán campos de identificación, composición, fabricante, origen, lote, vida útil y referencia sanitaria.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div class="step">2</div>
+          <div>
+            <h2>Carga los documentos</h2>
+            <p>Puedes validar una ficha nueva y, opcionalmente, compararla con un producto previamente registrado.</p>
+          </div>
+        </div>
+
+        <div class="history-compare-box">
+          <div>
+            <span class="field-label">Comparación histórica opcional</span>
+            <strong>¿Este producto ya fue importado anteriormente?</strong>
+            <p>Selecciona un registro previo para mostrar cambios frente a la última ficha almacenada.</p>
+          </div>
+          <select id="historicalSelect">
+            <option value="">No comparar con historial</option>
+          </select>
+        </div>
+
+        <div class="upload-grid">
+          <label class="upload-box">
+            <input id="technicalFile" type="file" accept=".pdf,.docx,.txt" />
+            <span class="upload-kicker">Documento principal</span>
+            <span class="upload-title">Ficha técnica del proveedor</span>
+            <span class="upload-subtitle" id="technicalFileName">Seleccionar PDF, DOCX o TXT</span>
+          </label>
+
+          <label class="upload-box optional">
+            <input id="referenceFile" type="file" accept=".pdf,.docx,.txt" />
+            <span class="upload-kicker">Documento de contraste</span>
+            <span class="upload-title">Registro, permiso o documento de referencia</span>
+            <span class="upload-subtitle" id="referenceFileName">Opcional</span>
+          </label>
+        </div>
+
+        <div class="demo-actions">
+          <button class="secondary-button" id="demoPass">Usar ejemplo conforme</button>
+          <button class="secondary-button" id="demoReview">Usar ejemplo con observaciones</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div class="step">3</div>
+          <div>
+            <h2>Ejecuta la validación</h2>
+            <p>El sistema extrae texto, identifica información clave y la contrasta con las reglas de la categoría seleccionada.</p>
+          </div>
+        </div>
+
+        <button id="analyzeBtn" class="primary-button">Analizar documentos</button>
+
+        <div id="progressWrap" class="progress-wrap hidden">
+          <div class="progress-line">
+            <span id="progressLabel">Preparando análisis…</span>
+            <span id="progressPct">0%</span>
+          </div>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="resultsPanel">
+        <div class="section-heading">
+          <div class="step">4</div>
+          <div>
+            <h2>Resultado de la validación</h2>
+            <p>Resumen del cumplimiento documental según las reglas demostrativas del sistema.</p>
+          </div>
+        </div>
+
+        <div class="result-summary">
+          <div>
+            <span id="statusPill" class="status-pill">Pendiente</span>
+            <h3 id="resultTitle">Análisis pendiente</h3>
+            <p id="resultMessage"></p>
+          </div>
+
+          <div class="score-box">
+            <span>Coincidencia documental</span>
+            <strong id="scoreValue">0%</strong>
+          </div>
+        </div>
+
+        <div id="historicalAlert" class="historical-alert hidden"></div>
+
+        <div class="metrics">
+          <div class="metric"><strong id="okCount">0</strong><span>Conformes</span></div>
+          <div class="metric"><strong id="warnCount">0</strong><span>Revisar</span></div>
+          <div class="metric"><strong id="failCount">0</strong><span>No conformes</span></div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campo evaluado</th>
+                <th>Qué busca el sistema</th>
+                <th>Resultado</th>
+                <th>Evidencia detectada</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="recommendation-box">
+          <strong>Acción sugerida</strong>
+          <p id="recommendationText"></p>
+        </div>
+      </section>
+
+      <section class="panel" id="base-historica">
+        <div class="section-heading">
+          <div class="step muted">DB</div>
+          <div>
+            <h2>Base histórica de productos</h2>
+            <p>Simulación de fichas y productos previamente registrados por empresas usuarias.</p>
+          </div>
+        </div>
+
+        <div class="db-stats">
+          <div class="db-stat"><strong id="dbProducts">0</strong><span>Productos</span></div>
+          <div class="db-stat"><strong id="dbCompanies">0</strong><span>Empresas</span></div>
+          <div class="db-stat"><strong id="dbApproved">0</strong><span>Última revisión conforme</span></div>
+        </div>
+
+        <div class="db-toolbar">
+          <input id="dbSearch" type="search" placeholder="Buscar empresa, producto, proveedor o categoría..." />
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Producto</th>
+                <th>Categoría</th>
+                <th>Proveedor</th>
+                <th>Última ficha</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="databaseBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="biblioteca">
+        <div class="section-heading">
+          <div class="step muted">B</div>
+          <div>
+            <h2>Biblioteca regulatoria</h2>
+            <p>Las reglas cambian según el producto. En una versión real, cada regla incluiría fuente normativa, fecha de vigencia y trazabilidad.</p>
+          </div>
+        </div>
+        <div id="rulesPreview" class="rules-preview"></div>
+      </section>
+
+      <section class="panel" id="historial">
+        <div class="section-heading">
+          <div class="step muted">H</div>
+          <div>
+            <h2>Historial de validaciones</h2>
+            <p>Las validaciones realizadas durante la demostración se guardan localmente en este navegador.</p>
+          </div>
+        </div>
+        <div id="historyList" class="history-list">
+          <p class="empty-state">Aún no hay validaciones.</p>
+        </div>
+      </section>
+
+      <footer>
+        AduanTEC · Prototipo demostrativo · No constituye certificación regulatoria ni autorización de importación.
+      </footer>
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
